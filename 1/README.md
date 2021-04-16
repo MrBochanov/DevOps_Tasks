@@ -23,4 +23,4 @@ There is some tricky parts, but I tested this script with clean version of ubunt
 
 Also this script expected to be run once, so there is no any checks if config changes already exists
 
-PS Also I understand that its not realy a "script", its just a banch of commands, without cycles and conditions, and I hope its okay. Some changes take place only after reboot (sshd port. for example)   
+PS Also I understand that its not realy a "script", its just a bunch of commands, without cycles and conditions, and I hope its okay. Some changes take place only after reboot (sshd port. for example)   
