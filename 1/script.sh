@@ -28,8 +28,13 @@ sudo apt update -qq && sudo apt --no-install-recommends -y install monit && syst
 echo "set httpd port 2812" >> /etc/monit/monitrc
 echo "allow devops:test" >> /etc/monit/monitrc
 #nginx
-sudo sed -i "s|root /var/www/html;|#root /var/www/html|g" /etc/nginx/sites-available/default
-sudo sed -i '/^\tlocation \/ {/!b;n;c\\tproxy_pass http://localhost:2812;' /etc/nginx/sites-available/default
+sudo sed -i "s|^\troot /var/www/html;|\t#root /var/www/html|g" /etc/nginx/sites-available/default
+sudo sed -i '/^\tlocation \/ {/!b;n;c\\t\trewrite ^/(.*) /$1 break;\n' /etc/nginx/sites-available/default
+sudo sed -i '/^\t\trewrite ^\/(.*) \/$1 break;/!b;n;c\\t\tproxy_ignore_client_abort on;\n' /etc/nginx/sites-available/default
+sudo sed -i '/^\t\tproxy_ignore_client_abort on;/!b;n;c\\t\tproxy_pass http://127.0.0.1:2812;\n' /etc/nginx/sites-available/default
+sudo sed -i '/^\t\tproxy_pass http:\/\/127.0.0.1:2812;/!b;n;c\\t\tproxy_set_header Host $host;\n' /etc/nginx/sites-available/default
+#sudo sed -i "s|/^\t\ttry_files $uri $uri/ =404;|/^\t\t#try_files $uri $uri/ =404;|g" /etc/nginx/sites-available/default
+sudo sed -i 's/^\t\ttry_files/\t\t#try_files/g' /etc/nginx/sites-available/default
 systemctl restart monit
 sudo nginx -s reload
 #Configure UFW
