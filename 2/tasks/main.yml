@@ -1,0 +1,68 @@
+---
+# tasks file for HomeWork
+
+#Apt Update
+- name: Apt Update and Upgrade
+  apt:
+    update_cache: yes
+    upgrade: yes
+#Time zone
+- name: Install tzdata
+  apt: name=tzdata state=latest
+- name: Update Timezone
+  copy: src=timezone dest=/etc/timezone
+#Locale
+- name: Install locales
+  apt: name=locales state=latest
+- name: Update Locale
+  copy: src=locale dest=/etc/default/locale
+#Run SSHD at port 2498 instead of 22 && Deny remote login as root user
+- name: Install Openssh-server
+  apt: name=openssh-server state=latest
+- name: Enable ssh-server
+  service: name=ssh state=started enabled=yes
+- name: Configure Secure sshd
+  copy: src=sshd_config dest=/etc/ssh/sshd_config
+  notify: Restart sshd service
+#Add serviceuser account to the system && Grant sudo permissions to the user serviceuser && Limit sudo permissions of the user serviceuser to start|stop|restart services
+- name: This should be in a vault in real playbook of course
+  set_fact:
+    user_password: 'passw0rd'
+    user_salt: 'some_salt'
+- name: Add serviceuser + Grant sudo
+  user:
+   name: "serviceuser"
+   password: "{{ user_password | password_hash('sha512', user_salt) }}"
+   state: present
+   shell: /bin/bash
+   groups: sudo
+   update_password: on_create
+- name: Copy sudoers config
+  copy: src=sudoers dest=/etc/sudoers
+#Install Nginx server and make it autostart after booting
+- name: Install_Nginx_server
+  apt: name=nginx state=latest
+- name: Start Nginx and Enable it
+  service: name=nginx state=started enabled=yes
+#Install Monit server and make it autostart after booting
+- name: Install_Monit_server
+  apt: name=monit state=latest
+- name: Start Monit and Enable it
+  service: name=monit state=started enabled=yes
+#Configure Nginx to proxy requests to Monit server with the basic auth using credentials "devops/test".
+- name: Copy Monit Config
+  copy: src=monitrc dest=/etc/monit/monitrc
+  notify: Restart monit service
+- name: Copy Nginx Config
+  copy: src=default dest=/etc/nginx/sites-available/default
+  notify: Restart nginx service
+#Configure UFW
+- name: Install_UFW
+  apt: name=ufw state=latest
+- name: Bring UFW config
+  copy: src=ufw dest=/etc/default/ufw
+- name: Bring UFW user.rules
+  copy: src=user.rules dest=/etc/ufw/user.rules
+- name: Start UFW and Enable it
+  service: name=ufw enabled=yes
+

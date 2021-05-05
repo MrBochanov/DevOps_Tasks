@@ -1,0 +1,9 @@
+---
+# handlers file for HomeWork
+
+- name: Restart sshd service
+  service: name=ssh state=restarted
+- name: Restart nginx service
+  service: name=nginx state=restarted
+- name: Restart monit service
+  service: name=monit state=restarted
